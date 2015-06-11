@@ -19,7 +19,7 @@ def _check_format(filename, sep=" ", ncols=3):
     types = df.dtypes
     for num in range(ncols):
         if types[num] != 'float':
-            assert ValueError, 'First column should be numeric (float), got %s instead' %(types[num])
+            assert ValueError, '%s column should be numeric (float), got %s instead' %(num, types[num])
 
     print 'Graph "%s" has correct format' %filename
 

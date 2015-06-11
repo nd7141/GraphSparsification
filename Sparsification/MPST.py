@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 from memory_profiler import memory_usage
 from shutil import copyfile
+from subprocess import call
 
 def _comprehension_flatten(iter_lst):
     return [item for lst in iter_lst for item in lst]
@@ -176,7 +177,7 @@ def get_sparsified_MPST_keep_connected(G, K):
         MPST_edges.extend(mp_edges[:(K - len(MPST_edges))])
     else:
         #remove edges that will not make isolated vertices
-
+        print 'Start removing spare edges'
         MPST = nx.Graph()
         MPST.add_edges_from(MPST_edges)
         # edges where both endpoints have at least 2 edges (remove these edges first)
@@ -456,9 +457,52 @@ def get_possible_worlds(graph_file, PW_folder, I):
 def estimate_memory(f, args, kw={}, interval=.5):
     return max(memory_usage((f, args, kw), interval=interval))
 
+def main():
+    '''
+    Run Sparsification method to obtain
+    :return:
+    '''
+
+
+# output_folder -- folder with sparsified graphs
+#
+
 if __name__ == "__main__":
     time2execute = time.time()
 
-    print "Finished execution in %s sec" %(time.time() - time2execute)
+    arguments = sys.argv
+    dataset_filename = arguments[1]
+    percentages_filename = arguments[2] # filename with specified percentages of the total number of edges
+    sparsified_filename = arguments[3]
 
+    percentages = []
+    with open(percentages_filename) as f:
+        for line in f:
+            percentages.append(int(line))
+
+    for perc in percentages:
+        print 'Percentage: %s%%' %(perc)
+        print '*Reading graph...'
+        G = get_graph_from_file(dataset_filename)
+        K = int(len(G.edges())*perc/100)
+        print '*Obtaining sparsified edges...'
+        kept_edges = get_sparsified_MPST_keep_connected(G, K)
+        Q = nx.Graph(kept_edges)
+
+        print '*Saving sparsified edges to files for MATLAB processing...'
+        directory = 'tmp/'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        save_for_LP(directory+'A' + perc + '.dat', directory+'b' + perc + '.dat', Q, G, directory+'e' + perc + '.dat', directory+'D' + perc + '.dat')
+
+    #TODO fix matlab script to read percentages from the file
+    # print '*Assigning probabilities'
+    # call(['matlab', '-nodisplay', '-r', 'LP.m', percentages_filename])
+    #
+    # print '*Constructing sparsified graph...'
+    # construct_lp_graph(directory+'x' + perc + '.dat', directory+'e' + perc + '.dat', sparsified_filename + perc + '.txt')
+
+    #TODO remove tmp folder
+
+    print "Finished execution in %s sec" %(time.time() - time2execute)
     console = []
