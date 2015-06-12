@@ -1,13 +1,17 @@
+
 clear all; 
 
-%    fmae = strcat('Flickr/mae01MP.dat');
-%    dlmwrite(fmae, []);
+% fmae = strcat('Flickr/mae01MP.dat');
+% dlmwrite(fmae, []);
 
-for i=1:1:10
+fP = strcat('tmp/percentages.txt');
+P = load(fP);
+
+for i = P'
     % undirected case
-    fA = strcat('Flickr/LP/A', num2str(i), '.dat');
-    fb = strcat('Flickr/LP/d', num2str(i), '.dat');
-    fD = strcat('Flickr/LP/D', num2str(i), '.dat');
+    fA = strcat('tmp/A', num2str(i), '.dat');
+    fb = strcat('tmp/b', num2str(i), '.dat');
+    fD = strcat('tmp/D', num2str(i), '.dat');
 
     % directed case
 %     fAin = strcat('Flixster/LP/Ain', num2str(i), '.dat');
@@ -63,8 +67,10 @@ for i=1:1:10
     n
     mae = (s + a)/n
 
-    fprob = strcat('Flickr/LP/x', num2str(i), '.dat');
+    fprob = strcat('tmp/x', num2str(i), '.dat');
     dlmwrite(fprob, x);
     
 %     dlmwrite(fmae, [i/100, mae], '-append');
 end
+% 
+exit;

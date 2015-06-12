@@ -16,7 +16,7 @@ from itertools import product, izip
 import matplotlib.pyplot as plt
 import matplotlib
 from memory_profiler import memory_usage
-from shutil import copyfile
+from shutil import copyfile, rmtree
 from subprocess import call
 
 def _comprehension_flatten(iter_lst):
@@ -457,23 +457,22 @@ def get_possible_worlds(graph_file, PW_folder, I):
 def estimate_memory(f, args, kw={}, interval=.5):
     return max(memory_usage((f, args, kw), interval=interval))
 
-def main():
+def main(dt='../Datasets/Ep_hep_random1.txt', pt='percentages.txt', st='Result/Q'):
     '''
     Run Sparsification method to obtain
     :return:
     '''
-
-
-# output_folder -- folder with sparsified graphs
-#
-
-if __name__ == "__main__":
-    time2execute = time.time()
-
     arguments = sys.argv
-    dataset_filename = arguments[1]
-    percentages_filename = arguments[2] # filename with specified percentages of the total number of edges
-    sparsified_filename = arguments[3]
+    if len(arguments) == 1:
+        dataset_filename = dt
+        percentages_filename = pt
+        sparsified_filename = st
+    elif len(arguments) == 4:
+        dataset_filename = arguments[1] # the path to dataset filename
+        percentages_filename = arguments[2] # filename with specified percentages of the total number of edges
+        sparsified_filename = arguments[3] # the path to the output place of sparsified graphs
+    else:
+        raise ValueError, 'You should provide 3 arguments: dataset, percentages, name of sparsified file'
 
     percentages = []
     with open(percentages_filename) as f:
@@ -493,16 +492,27 @@ if __name__ == "__main__":
         directory = 'tmp/'
         if not os.path.exists(directory):
             os.makedirs(directory)
-        save_for_LP(directory+'A' + perc + '.dat', directory+'b' + perc + '.dat', Q, G, directory+'e' + perc + '.dat', directory+'D' + perc + '.dat')
+        copyfile(percentages_filename, directory + os.path.basename(percentages_filename))
+        save_for_LP(directory+'A' + str(perc) + '.dat', directory+'b' + str(perc) + '.dat', Q, G, directory+'e' + str(perc) + '.dat', directory+'D' + str(perc) + '.dat')
 
-    #TODO fix matlab script to read percentages from the file
-    # print '*Assigning probabilities'
-    # call(['matlab', '-nodisplay', '-r', 'LP.m', percentages_filename])
-    #
-    # print '*Constructing sparsified graph...'
-    # construct_lp_graph(directory+'x' + perc + '.dat', directory+'e' + perc + '.dat', sparsified_filename + perc + '.txt')
+    print '*Assigning probabilities'
+    call(['matlab', '-nodisplay', '-r', "run('LP.m')"])
 
-    #TODO remove tmp folder
+    print '*Constructing sparsified graph...'
+    for perc in percentages:
+        construct_lp_graph(directory+'x' + str(perc) + '.dat', directory+'e' + str(perc) + '.dat', sparsified_filename + str(perc) + '.txt')
+
+    rmtree(directory)  # remove tmp folder
+
+if __name__ == "__main__":
+    time2execute = time.time()
+
+    # Run from command-line
+    # example: python MPST.py ../Datasets/Ep_hep_random1.txt percentages.txt Q
+    # ../Datasets/Ep_hep_random1.txt -- filename of dataset
+    # percentages.txt -- filename with percentages
+    # Q -- name of sparsified graphs (they will be written in the form such as Q10.txt, where 10 is percent)
+    main()
 
     print "Finished execution in %s sec" %(time.time() - time2execute)
     console = []
