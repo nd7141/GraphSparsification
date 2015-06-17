@@ -586,7 +586,7 @@ int main(int argc, char* argv[]) {
 	myfile.open(outfilename.c_str());
 //	myfile.open(seeds_filename.c_str());
 //	cout << seeds_filename;
-//	myfile << k << " ";
+	myfile << k << " ";
 	for (std::set<int>::iterator it = S.begin(); it != S.end(); ++it) {
 		myfile << *it << ' ';
 	}
