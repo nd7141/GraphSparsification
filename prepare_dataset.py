@@ -25,8 +25,10 @@ def _check_format(filename, sep=" ", ncols=3):
 
 
 if __name__ == "__main__":
-    df = pd.read_csv('Datasets/Flickr5000.txt', sep=' ')
+    # df = pd.read_csv('Datasets/Flickr5000.txt', sep=' ')
 
-    _check_format('Datasets/Flickr5000.txt')
+    # _check_format('Datasets/Flickr5000.txt')
+
+    a = set([1,2,3])
 
     console = []

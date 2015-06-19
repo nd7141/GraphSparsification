@@ -100,6 +100,7 @@ int main(int argc, char* argv[]) {
 	const int V = atoi(argv[2]); // number of nodes
 	const string seeds_F = argv[3]; // filename of seeds
 	const int I = atoi(argv[4]);         // number of MC simulations
+	const string spread_f = argv[5]; // filename for spread
 
 	cout << "Graph: " << dataset_f << " I: " << I << endl;
 
@@ -195,8 +196,9 @@ int main(int argc, char* argv[]) {
 			// append cascade size to file
 			std::ofstream myfile;
 //			string output = "TIM/spread/spread_k" + lexical_cast<string>(k) + ".txt";
-			string output = "spread.txt";
-			myfile.open(output.c_str(), ios_base::app);
+			// string output = "spread.txt";
+			// myfile.open(output.c_str(), ios_base::app);
+			myfile.open(spread_f, ios_base::app);
 			myfile << cascade_size << endl;
 			myfile.close();
 
