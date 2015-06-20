@@ -199,7 +199,7 @@ int main(int argc, char* argv[]) {
 			// string output = "spread.txt";
 			// myfile.open(output.c_str(), ios_base::app);
 			myfile.open(spread_f, ios_base::app);
-			myfile << cascade_size << endl;
+			myfile << k << " " << cascade_size << endl;
 			myfile.close();
 
 			// clear seed set
