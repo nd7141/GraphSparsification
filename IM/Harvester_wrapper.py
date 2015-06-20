@@ -15,15 +15,18 @@ def getN(filename):
 if __name__ == "__main__":
     start2exec = time.time()
 
-    if len(sys.argv) != 5:
-        assert ValueError, 'command: python Harvester_wrapper.py dataset k R I'
+    if len(sys.argv) not in [5,6]:
+        assert ValueError, 'command: python Harvester_wrapper.py dataset k R I (N)'
 
     dataset = sys.argv[1] # path to dataset
     k = sys.argv[2] # number of seeds
     R = sys.argv[3] # number of worlds
     I = sys.argv[4] # number of Monte-Carlo simulations
+    if len(sys.argv) == 6:
+        N = sys.argv[5] # number of vertices in dataset
+    else:
+        N = getN(dataset)
 
-    N = getN(dataset)
     Harvester_time = []
     Spread_time = []
     begin_seed = 10
