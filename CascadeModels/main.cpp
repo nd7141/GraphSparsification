@@ -6,19 +6,19 @@
 
 using namespace std;
 
-void Categories(string dataset_f, int N, string prob_dataset) {
+void Categories(string dataset_f, long int N, string prob_dataset) {
 
     ifstream infile(dataset_f.c_str());
     if (infile==NULL){
         cout << "Unable to open the input file\n";
     }
 
-    map<int, int> nodes;
-    vector<vector<int> > graph(N);
+    map<long int, long int> nodes;
+    vector<vector<long int> > graph(N);
 
-    int u, v;
-    int edge_count=0;
-    int count = 0;
+    long int  u, v;
+    // long int edge_count=0;
+    long int count = 0;
 
 
     cout << "Start reading the file..." << endl;
@@ -26,25 +26,29 @@ void Categories(string dataset_f, int N, string prob_dataset) {
         if (!nodes.count(u)) {
             nodes[u] = count;
             count++;
+            if (count==1000000 or count==2000000 or count==N-1)
+                cout << count << endl;
         }
         if (!nodes.count(v)) {
             nodes[v] = count;
             count++;
+            if (count==1000000 or count==2000000 or count==N-1)
+                cout << count << endl;
         }
         graph[nodes[u]].push_back(v);
         graph[nodes[v]].push_back(u);
-        edge_count++;
+        // edge_count++;
     }
-	cout <<"E = "<<edge_count<< " V = "<< count <<endl;
+	// cout <<"E = "<<edge_count<< " V = "<< count <<endl;
     infile.close();
 
     cout << "Preparing probabilities..." << endl;
-    int sizes[N];
-    for (int i=0; i<graph.size(); i++) {
+    vector<long int>  sizes(N);
+    for (long int  i=0; i<graph.size(); i++) {
         sizes[i] = graph[i].size();
     }
-    sort(sizes, sizes + N);
-    int idx1 = N/4, idx2 = N/2, idx3 = 3*N/4;
+    sort(sizes.begin(), sizes.end());
+    long int  idx1 = N/4, idx2 = N/2, idx3 = 3*N/4;
 
     cout << "Writing probabilities to file..." << endl;
     // write Categories model to file
