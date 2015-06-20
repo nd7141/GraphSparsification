@@ -5,3 +5,6 @@
 *.zip
 *.project
 *.cproject
+*.settings
+*.o
+*.d
