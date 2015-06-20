@@ -8,3 +8,6 @@
 *.settings
 *.o
 *.d
+IM/getPossibleWorlds/getPossibleWorlds
+IM/getSpread/runCascade
+IM/Harvester/Harvester
