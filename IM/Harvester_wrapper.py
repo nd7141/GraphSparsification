@@ -3,7 +3,7 @@
 '''
 from __future__ import division
 __author__ = 'sivanov'
-import os, sys, time
+import os, sys, time, json
 
 def getN(filename):
     nodes = set()
@@ -24,6 +24,11 @@ if __name__ == "__main__":
     I = sys.argv[4] # number of Monte-Carlo simulations
 
     N = getN(dataset)
+    Harvester_time = []
+    Spread_time = []
+    begin_seed = 10
+    end_seed = 55
+    step_seed = 5
 
     # create directory if not exist
     directory = "data/"
@@ -33,30 +38,40 @@ if __name__ == "__main__":
     if not os.path.exists(directory + 'PW/'):
         os.makedirs(directory + 'PW/')
 
+    # remove the output file if exists
+    output = directory + 'spread.txt'
+    if os.path.exists(output):
+        os.remove(output)
 
-    start2worlds = time.time()
-    # create possible worlds
     os.system('make -C ./getPossibleWorlds/')
+    os.system('make -C ./Algorithms/Harvester/')
+    os.system('make -C ./getSpread/')
+
+    # create possible worlds
+    start2worlds = time.time()
     os.system('./getPossibleWorlds/getPossibleWorlds ' + dataset + " " + str(R) + ' ./'  + directory + 'PW/')
     finish2worlds = time.time() - start2worlds
 
-    start2Harvester = time.time()
-    # run Harveseter
-    os.system('make -C ./Algorithms/Harvester/')
-    os.system('./Algorithms/Harvester/Harvester ' + dataset + ' ' + str(N) + ' ' + directory + 'PW/' + ' ' + str(k) + ' ' + directory + 'seeds.txt')
-    finish2Harvester = time.time() - start2Harvester
+    for k in range(begin_seed, end_seed, step_seed):
+        # run Harveseter
+        start2Harvester = time.time()
+        os.system('./Algorithms/Harvester/Harvester %s %s %s %s %s' %(dataset, N, directory+'PW/', str(k), directory + 'seeds' + str(k) + '.txt'))
+        # os.system('./Algorithms/Harvester/Harvester ' + dataset + ' ' + str(N) + ' ' + directory + 'PW/' + ' ' + str(k) + ' ' + directory + 'seeds.txt')
+        finish2Harvester = time.time() - start2Harvester
+        Harvester_time.append(finish2Harvester)
 
-    start2Spread = time.time()
-    # calculate spread
-    os.system('make -C ./getSpread/')
-    os.system('./getSpread/runCascade ' + dataset + ' ' + str(N) + ' ' + directory + 'seeds.txt ' + str(I) + ' ' + directory + 'spread.txt')
-    finish2Spread = time.time() - start2Spread
+        # calculate spread
+        start2Spread = time.time()
+        os.system('./getSpread/runCascade %s %s %s %s %s' %(dataset, N, directory + 'seeds' + str(k) + '.txt', I, output))
+        # os.system('./getSpread/runCascade ' + dataset + ' ' + str(N) + ' ' + directory + 'seeds.txt ' + str(I) + ' ' + directory + 'spread' + str(k) + '.txt')
+        finish2Spread = time.time() - start2Spread
+        Spread_time.append(finish2Spread)
 
-    finish2exec = time.time() - start2exec
+        finish2exec = time.time() - start2exec
 
     print '* To get worlds: %s sec' %finish2worlds
-    print '* To run Harvester: %s sec' %finish2Harvester
-    print '* To get spread: %s sec' %finish2Spread
+    print '* To run Harvester: %s sec' %json.dumps(Harvester_time)
+    print '* To get spread: %s sec' %json.dumps(Spread_time)
     print '* Total execution time: %s sec' %finish2exec
 
     console = []
