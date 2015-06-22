@@ -15,3 +15,6 @@ IM/Harvester/Harvester
 IM/Algorithms/IMM/imm
 IM/Algorithms/IMM/imm_continuous
 IM/Algorithms/IMM/imm_discrete
+*.png
+*.pdf
+*.jpg
