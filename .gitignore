@@ -11,3 +11,7 @@
 IM/getPossibleWorlds/getPossibleWorlds
 IM/getSpread/runCascade
 IM/Harvester/Harvester
+*.inf
+IM/Algorithms/IMM/imm
+IM/Algorithms/IMM/imm_continuous
+IM/Algorithms/IMM/imm_discrete
