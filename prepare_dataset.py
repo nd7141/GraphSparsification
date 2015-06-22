@@ -23,12 +23,24 @@ def _check_format(filename, sep=" ", ncols=3):
 
     print 'Graph "%s" has correct format' %filename
 
+def make_directed(filename, output):
+    edges = dict()
+    with open(filename) as f:
+        for line in f:
+            d = line.split()
+            edges[(d[0], d[1])] = d[2]
+            edges[(d[1], d[0])] = d[2]
+    with open(output, 'w+') as f:
+        for edge in edges:
+            f.write('%s %s %s\n' %(edge[0], edge[1], edges[edge]))
+
 
 if __name__ == "__main__":
-    # df = pd.read_csv('Datasets/Flickr5000.txt', sep=' ')
+    # df = pd.read_csv('Datasets/hep.txt', sep=' ')
 
-    # _check_format('Datasets/Flickr5000.txt')
+    _check_format('Datasets/hep.txt', ncols=2)
+    _check_format('Datasets/hep_prob.txt', ncols=3)
 
-    a = set([1,2,3])
+    make_directed('Datasets/hep_prob.txt', 'Datasets/hep_dir_prob.txt')
 
     console = []
