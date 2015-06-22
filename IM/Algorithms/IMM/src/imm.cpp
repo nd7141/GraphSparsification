@@ -18,7 +18,7 @@ public:
 
 
 
-void run_with_parameter(InfGraph &g, const Argument & arg)
+void run_with_parameter(InfGraph &g, string output, const Argument & arg)
 {
         cout << "--------------------------------------------------------------------------------" << endl;
         cout << arg.dataset << " k=" << arg.k << " epsilon=" << arg.epsilon <<   " " << arg.model << endl;
@@ -27,18 +27,23 @@ void run_with_parameter(InfGraph &g, const Argument & arg)
 
         INFO(g.seedSet);
         INFO(g.InfluenceHyperGraph());
+        // append cascade size to file
+        std::ofstream myfile;
+        myfile.open(output, ios_base::app);
+        myfile << arg.k << " " << g.InfluenceHyperGraph() << endl;
+        myfile.close();
     Timer::show();
 }
 void Run(int argn, char **argv)
 {
     Argument arg;
 
-
+    string output;
     for (int i = 0; i < argn; i++)
     {
         if (argv[i] == string("-help") || argv[i] == string("--help") || argn == 1)
         {
-            cout << "./tim -dataset *** -epsilon *** -k ***  -model IC|LT|TR|CONT " << endl;
+            cout << "./tim -dataset *** -epsilon *** -k ***  -model IC|LT|TR|CONT -output *** " << endl;
             return ;
         }
         if (argv[i] == string("-dataset")) 
@@ -51,6 +56,8 @@ void Run(int argn, char **argv)
             arg.k = atoi(argv[i + 1]);
         if (argv[i] == string("-model"))
             arg.model = argv[i + 1];
+        if (argv[i] == string("-output"))
+            output = argv[i+1];
     }
     ASSERT(arg.dataset != "");
     ASSERT(arg.model == "IC" || arg.model == "LT" || arg.model == "TR" || arg.model=="CONT");
@@ -83,7 +90,7 @@ void Run(int argn, char **argv)
 
     INFO(arg.T);
 
-    run_with_parameter(g, arg);
+    run_with_parameter(g, output, arg);
 }
 
 
