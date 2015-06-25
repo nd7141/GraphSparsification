@@ -27,8 +27,8 @@ if __name__ == "__main__":
 
     IMM_time = []
     Spread_time = []
-    begin_seed = 10
-    end_seed = 155
+    begin_seed = 45
+    end_seed = 55
     step_seed = 5
 
     # create directory if not exist
@@ -54,7 +54,9 @@ if __name__ == "__main__":
     os.system('make -C ./Algorithms/IMM/')
 
     for k in range(begin_seed, end_seed, step_seed):
-        os.system('./Algorithms/IMM/imm_discrete -dataset %s -epsilon %s -k %s  -model IC -output %s ' %(dataset, eps, k, output))
+        if os.path.exists(directory + 'seeds%s.txt' %(k)):
+            os.remove(directory + 'seeds%s.txt' %(k))
+        os.system('./Algorithms/IMM/imm_discrete -dataset %s -epsilon %s -k %s  -model IC -spread %s -seeds %s' %(dataset, eps, k, output, directory + 'seeds%s.txt' %(k)))
 
     finish2exec = time.time() - start2exec
 

@@ -18,7 +18,7 @@ public:
 
 
 
-void run_with_parameter(InfGraph &g, string spread, string seeds, const Argument & arg)
+void run_with_parameter(InfGraph &g, string seeds, const Argument & arg)
 {
         cout << "--------------------------------------------------------------------------------" << endl;
         cout << arg.dataset << " k=" << arg.k << " epsilon=" << arg.epsilon <<   " " << arg.model << endl;
@@ -35,11 +35,6 @@ void run_with_parameter(InfGraph &g, string spread, string seeds, const Argument
             seeds_file << " " << seed;
         }
         seeds_file.close();
-        // append cascade size to file
-        ofstream spread_file;
-        spread_file.open(spread, ios_base::app);
-        spread_file << arg.k << " " << g.InfluenceHyperGraph() << endl;
-        spread_file.close();
     Timer::show();
 }
 void Run(int argn, char **argv)
@@ -64,8 +59,6 @@ void Run(int argn, char **argv)
             arg.k = atoi(argv[i + 1]);
         if (argv[i] == string("-model"))
             arg.model = argv[i + 1];
-        if (argv[i] == string("-spread"))
-            spread = argv[i+1];
         if (argv[i] == string("-seeds"))
             seeds = argv[i+1];
     }
@@ -100,7 +93,7 @@ void Run(int argn, char **argv)
 
     INFO(arg.T);
 
-    run_with_parameter(g, spread, seeds, arg);
+    run_with_parameter(g, seeds, arg);
 }
 
 
