@@ -9,6 +9,7 @@
 #include <sys/stat.h>               // to check for files
 #include <string>
 #include <sstream>
+#include <vector>
 
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
@@ -52,24 +53,23 @@ public:
         return (cc1.nodes.size() > cc2.nodes.size());
     }
 };
-typedef priority_queue <CC, vector<CC>, CC_greater> CC_pq;
 
 class compare {
 public:
     bool operator()(vector<int> lhs, vector<int> rhs) {
-        return lhs.size() > rhs.size();
+        return lhs.size() < rhs.size();
     }
 };
 
 typedef priority_queue<vector<int>, vector<vector<int> >, compare> PQ;
 
-// find top-k CCs using vectors graph representation
-PQ find_top_CC(vector<vector<int> >& PW, int V, int k) {
+// find top CCs that reach T nodes
+vector<vector<int> > find_top_CC(vector<vector<int> >& PW, int V, int T) {
 
     PQ pq; // priority queue for top-k CC
     map<int, bool> explored;
     for (int i = 0; i < V; ++i)
-    explored[i] = false;
+        explored[i] = false;
     int cc_number = 0;
     int unit_sized = 0;
 
@@ -91,29 +91,21 @@ PQ find_top_CC(vector<vector<int> >& PW, int V, int k) {
                 }
                 ix++;
             }
-            //          if (CC.size() > 5)
-            //              cout << cc_number << ": " << CC.size() << endl;
-            if (CC.size() == 1) {
-                unit_sized++;
-            }
             cc_number++;
 
-            // maintain CC priority queue
-            int pq_size = pq.size();
-            if (pq_size == k) {
-                vector<int> top = pq.top();
-                if (top.size() < CC.size()) {
-                    pq.pop();
-                    pq.push(CC);
-                }
-            }
-            else
-                pq.push(CC);
+            pq.push(CC);
         }
     }
-        //  cout << "Total CCs: " << cc_number << endl;
-        //  cout << "Unit CCs: " << unit_sized << endl;
-    return pq;
+    int coverage = 0;
+    vector<int> CC;
+    vector<vector<int> > topT_CC;
+    while (coverage < T) {
+        CC = pq.top();
+        coverage += CC.size();
+        pq.pop();
+        topT_CC.push_back(CC);
+    }
+    return topT_CC;
 }
 
 bool buildPW(vector<vector<int> >& PW, string dataset) {
@@ -174,9 +166,64 @@ void buildGraph (WeightedGraph& G, string input){
     cout <<"E = "<< edge_count << " V = "<< mapped << endl;
 }
 
-void accumulate_scores(string dataset, map<int, double>& scores, int& L, int T, int V, int R) {
+int accumulate_scores(map<int, double>& scores, string dataset, int T, int V, int R) {
     cout << "In the accumulate function" << endl;
+
+    float amount = 0;
+    for (int i=0; i<R; i++) {
+        vector<vector<int> > PW(V);
+        vector<vector<int> > topT_CC;
+        bool built = buildPW(PW, dataset);
+        if (built) {
+            topT_CC = find_top_CC(PW, V, T);
+            for (int j=0; j<topT_CC.size(); j++) {
+                for (int ix=0; ix<topT_CC[j].size(); ++ix) {
+                    int node = topT_CC[j][ix];
+                    scores[node] += 1.0/topT_CC[j].size();
+                }
+            }
+        }
+        amount += (float)topT_CC.size()/(float)R;
+    }
+    int L = ceil(amount);
+    cout << "L:" << L << endl;
+    cout << "Finished accumulation phase" << endl;
+
+    return L;
 }
+
+void select_initial_nodes(vector<int>& S, map<int, double>& scores, int L, WeightedGraph G) {
+    cout << "Selecting initial nodes..." << endl;
+
+    int argmax_v;
+    double max_score;
+    map<int, bool> selected;
+    for (int i=0; i<L; ++i) {
+        argmax_v = -1;
+        max_score = 0;
+        for (int j=0; j<scores.size(); j++) {
+            if (!selected[j]) {
+                if (scores[j] > max_score) {
+                    max_score = scores[j];
+                    argmax_v = j;
+                }
+            }
+        }
+        if (argmax_v == -1) {
+            cout << "Failed to find next node..." << endl;
+            throw invalid_argument("Failed to find next node...");
+        }
+        else {
+            S.push_back(argmax_v);
+            selected[argmax_v] = true;
+        }
+    }
+    cout << "Selected nodes: ";
+    for (int i; i<S.size(); i++) {
+        cout << S[i] << " ";
+    }
+}
+//TODO write calculation spread nad binary search
 
 int main(int argc, char* argv[]) {
 
@@ -197,15 +244,14 @@ int main(int argc, char* argv[]) {
 
     //    accumulate scores
     map<int, double> scores;
-    int L;
-    accumulate_scores(dataset, scores, L, T, V, R);
+    int L = accumulate_scores(scores, dataset, T, V, R);
 
     //    select initial nodes
     vector<int> S;
     select_initial_nodes(S, scores, L, G);
-
-    //    add more nodes
-    add_more_nodes(S, T, G, scores);
+//
+//    //    add more nodes
+//    add_more_nodes(S, T, G, scores);
 
     cout << "Finished code" << endl;
     return 0;
