@@ -17,22 +17,24 @@ def getNM(filename):
 if __name__ == "__main__":
     start2exec = time.time()
 
-    if len(sys.argv) not in [4]:
-        assert ValueError, 'command: python IMM_wrapper.py dataset_folder eps k)'
+    if len(sys.argv) != 5:
+        assert ValueError, 'command: python IMM_wrapper.py folder eps I undirected_dataset'
 
     # dataset_folder should contain graph_ic.inf file with a graph u v p
 
-    dataset = sys.argv[1] # path to dataset
+    folder = sys.argv[1] # path to the folder with dataset
     eps = sys.argv[2] # epsilon
+    I = sys.argv[3] # number of MC simulations
+    dataset = sys.argv[4]
 
     IMM_time = []
     Spread_time = []
-    begin_seed = 45
-    end_seed = 55
+    begin_seed = 10
+    end_seed = 155
     step_seed = 5
 
     # create directory if not exist
-    directory = "IMM_data/"
+    directory = "data/IMM_data/"
     if not os.path.exists(directory):
         os.makedirs(directory)
 
@@ -41,24 +43,38 @@ if __name__ == "__main__":
     if os.path.exists(output):
         os.remove(output)
 
-    if not os.path.exists(dataset + 'graph_ic.inf'):
+    if not os.path.exists(folder + 'graph_ic.inf'):
         raise ValueError, 'The folder with data should contain file graph_ic.inf with graph'
 
     # create file attribute.txt
-    N, M = getNM(dataset + 'graph_ic.inf')
-    with open(dataset+'/attribute.txt', 'w+') as f:
+    N, M = getNM(folder + 'graph_ic.inf')
+    with open(folder+'/attribute.txt', 'w+') as f:
         f.write('n=%s\n' %N)
         f.write('m=%s\n' %M)
+
+    # remove the time file if exists
+    timing = directory + 'astro_categories_time.txt'
+    if os.path.exists(timing):
+        os.remove(timing)
 
     # os.system('make -C ./getPossibleWorlds/')
     os.system('make -C ./Algorithms/IMM/')
 
-    for k in range(begin_seed, end_seed, step_seed):
+    k_range = range(begin_seed, end_seed, step_seed)
+    for k in k_range:
         if os.path.exists(directory + 'seeds%s.txt' %(k)):
             os.remove(directory + 'seeds%s.txt' %(k))
-        os.system('./Algorithms/IMM/imm_discrete -dataset %s -epsilon %s -k %s  -model IC -spread %s -seeds %s' %(dataset, eps, k, output, directory + 'seeds%s.txt' %(k)))
+        start = time.time()
+        os.system('./Algorithms/IMM/imm_discrete -dataset %s -epsilon %s -k %s  -model IC -seeds %s' %(folder, eps, k, directory + 'seeds%s.txt' %(k)))
+        IMM_time.append(time.time() - start)
+        os.system('./getSpread/runCascade %s %s %s %s %s' %(dataset, N, directory + 'seeds%s.txt' %(k), I, output))
 
     finish2exec = time.time() - start2exec
+
+    # write timing to file
+    with open(timing, 'w+') as f:
+        for i in range(len(IMM_time)):
+            f.write("%s %s\n" %(k_range[i], IMM_time[i]))
 
     # print '* To get worlds: %s sec' %finish2worlds
     print '* Total execution time: %s sec' %finish2exec

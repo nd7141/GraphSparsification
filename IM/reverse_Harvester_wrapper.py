@@ -30,8 +30,8 @@ if __name__ == "__main__":
     print N, M
 
     reverse_time = []
-    begin_T = 400
-    end_T = 1050
+    begin_T = 15250
+    end_T = 15550
     step_T = 50
 
     # create directory if not exist
@@ -40,13 +40,20 @@ if __name__ == "__main__":
         os.makedirs(directory)
 
     # remove the output file if exists
-    output = directory + 'reverse.txt'
+    output = directory + 'astro_categories_reverse.txt'
     if os.path.exists(output):
         os.remove(output)
 
+    # remove the time file if exists
+    timing = directory + 'astro_categories_reverse_time.txt'
+    if os.path.exists(timing):
+        os.remove(timing)
+
     os.system('make -C ./Reverse/')
 
-    for T in range(begin_T, end_T, step_T):
+    T_range = range(begin_T, end_T, step_T)
+    for T in T_range:
+        print 'T:', T
         # run reverse
         start2reverse = time.time()
         os.system('./Reverse/main.o %s %s %s %s %s %s' %(dataset, N, R, T, I, output))
@@ -54,6 +61,11 @@ if __name__ == "__main__":
         reverse_time.append(finish2reverse)
 
     finish2exec = time.time() - start2exec
+
+    # write timing to file
+    with open(timing, 'w+') as f:
+        for i in range(len(reverse_time)):
+            f.write("%s %s\n" %(T_range[i], reverse_time[i]))
 
     print '* To run Reverse Harvester: %s sec' %json.dumps(reverse_time)
     print '* Total execution time: %s sec' %finish2exec

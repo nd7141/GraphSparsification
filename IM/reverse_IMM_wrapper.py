@@ -38,9 +38,10 @@ if __name__ == "__main__":
     print N, M
 
     reverse_time = []
-    begin_T = 100
-    end_T = 1050
+    begin_T = 15250
+    end_T = 15550
     step_T = 50
+
 
     # create directory if not exist
     directory = "data/IMM_data/"
@@ -51,17 +52,25 @@ if __name__ == "__main__":
     spread_filename = directory + "spread.txt"
 
     # remove the output file if exists
-    output = directory + 'gnu_categories_reverse.txt'
+    output = directory + 'astro_categories_reverse.txt'
     if os.path.exists(output):
         os.remove(output)
 
+    # remove the time file if exists
+    timing = directory + 'astro_categories_reverse_time.txt'
+    if os.path.exists(timing):
+        os.remove(timing)
+
     os.system('make -C ./Algorithms/IMM/')
 
-    for T in range(begin_T, end_T, step_T):
+    T_range = range(begin_T, end_T, step_T)
+    for T in T_range:
+        print 'T:', T
         # run reverse
         spreads = dict()
         spreads[0] = 0
         High = 1
+        start = time.time()
         get_spread(spreads, folder, eps, High, seeds_filename, spread_filename)
         spread = spreads[High]
         while spread < T:
@@ -77,11 +86,17 @@ if __name__ == "__main__":
                 High = k
             else:
                 Low = k
+        reverse_time.append(time.time() - start)
         with open(output, 'a+') as f:
             if spreads[Low] > T:
                 f.write("%s %s\n" %(T, Low))
             else:
                 f.write("%s %s\n" %(T, High))
+
+    # write timing to file
+    with open(timing, 'w+') as f:
+        for i in range(len(reverse_time)):
+            f.write("%s %s\n" %(T_range[i], reverse_time[i]))
 
     finish2exec = time.time() - start2exec
 
